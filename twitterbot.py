@@ -11,7 +11,7 @@ class TwitterBotError(Exception):
     '''Returns the first argument used to construct this error.'''
     return self.args[0]
 
-class LastIds(object):
+class LastIds(storage.StorageMixin):
    '''
    Storage object for the IDs of the last tweets seen on various feeds
    '''
@@ -36,7 +36,7 @@ class TwitterBot(object):
       The twitter bot constructor takes ...(TODO)
       '''
       if len(oauth_config_file) > 0:
-         oauth_config = storage.get_dict(oauth_config_file)
+         oauth_config = storage.load_dict(oauth_config_file)
       self._api = twitter.Api(**oauth_config)
       # duration between checking feed, timeline, replies, etc.
       self._check_period=check_period
@@ -51,7 +51,7 @@ class TwitterBot(object):
 
       while running:
 
-         last_ids = storage.get(LastIds,self._last_id_filename)
+         last_ids = LastIds.load(self._last_id_filename)
 
          last_ids.my_timeline = self.process_my_timeline(last_ids.my_timeline)
          last_ids.home = self.process_home_timeline(last_ids.home)
@@ -59,7 +59,7 @@ class TwitterBot(object):
          last_ids.mentions = self.process_mentions(last_ids.mentions)
          last_ids.dms = self.process_dms(last_ids.dms)
 
-         storage.save(last_ids,self._last_id_filename)
+         last_ids.save(self._last_id_filename)
 
          self.sleep()
 
