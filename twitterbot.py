@@ -3,6 +3,9 @@ import duration
 import time
 import storage
 
+#TODO: make this a command-line option
+_DEBUG = True
+
 class TwitterBotError(Exception):
   '''Base class for Duration errors'''
 
@@ -63,41 +66,54 @@ class TwitterBot(object):
 
          self.sleep()
 
-   def extract_id_if_exists(self,statuses,default):
-      if len(statuses) > 0:
-        return statuses[0].id
-      else:
-        return default
-
    def process_my_timeline(self,last_id):
-      statuses = self._api.GetUserTimeline(screen_name='jblondin')
-      #print [u"{0},{1}--{2}".format(s.id,s.user.screen_name,s.text) for s in statuses]
+      statuses = self._api.GetUserTimeline(screen_name='jblondin',since_id=last_id)
+      if _DEBUG:
+         self.print_statuses("My Timeline",statuses)
       return self.extract_id_if_exists(statuses,last_id)
 
    def process_home_timeline(self,last_id):
-      sid = 0
-      statuses = self._api.GetHomeTimeline(since_id=sid,count=5)
-      print [u"{0},{1}--{2}".format(s.id,s.user.screen_name,s.text) for s in statuses]
-      print len(statuses),sid,statuses[0].id
+      statuses = self._api.GetHomeTimeline(since_id=last_id)
+      if _DEBUG:
+         self.print_statuses("Home Timeline",statuses)
       return self.extract_id_if_exists(statuses,last_id)
 
    def process_replies(self,last_id):
-      statuses = self._api.GetReplies()
+      statuses = self._api.GetReplies(since_id=last_id)
+      if _DEBUG:
+         self.print_statuses("Replies",statuses)
       return self.extract_id_if_exists(statuses,last_id)
 
    def process_mentions(self,last_id):
-      statuses = self._api.GetMentions()
+      statuses = self._api.GetMentions(since_id=last_id)
+      if _DEBUG:
+         self.print_statuses("Mentions",statuses)
       return self.extract_id_if_exists(statuses,last_id)
 
    def process_dms(self,last_id):
       #FIXME: this apparently doesn't work; permission problem?
-      #statuses = self._api.GetDirectMessages()
+      #statuses = self._api.GetDirectMessages(since_id=last_id)
       return last_id
 
    def sleep(self):
       # TODO: update this to only sleep remaining amount
       time.sleep(self._check_period.seconds)
 
+   def extract_id_if_exists(self,statuses,default):
+      if len(statuses) > 0:
+        return statuses[0].id
+      else:
+        return default
+
+   def print_statuses(self,header,statuses):
+      if len(header):
+         print "="*20,header,"="*20
+      if len(statuses) == 0:
+         print "No statuses."
+      index = 1
+      for s in statuses:
+         print u'{0} @{1},{2} -- {3}'.format(index,s.user.screen_name,s.id,s.text)
+         index += 1
 
 if __name__ == "__main__":
    bot = TwitterBot("jblondin.oauth")
