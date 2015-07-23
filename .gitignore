@@ -58,3 +58,5 @@ target/
 
 # ignore oauth definitions
 *.oauth
+# ignore data files
+*.dat

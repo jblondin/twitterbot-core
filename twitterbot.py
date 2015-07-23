@@ -16,11 +16,11 @@ class LastIds(object):
    Storage object for the IDs of the last tweets seen on various feeds
    '''
    def __init__(self):
-      self.my_timeline = 0
-      self.home = 0
-      self.replies = 0
-      self.mentions = 0
-      self.dms = 0
+      self.my_timeline = None
+      self.home = None
+      self.replies = None
+      self.mentions = None
+      self.dms = None
 
 class TwitterBot(object):
    '''
@@ -53,39 +53,46 @@ class TwitterBot(object):
 
          last_ids = storage.get(LastIds,self._last_id_filename)
 
-         last_ids.my_timeline = self.process_my_timeline()
-         last_ids.home = self.process_home_timeline()
-         last_ids.replies = self.process_replies()
-         last_ids.mentions = self.process_mentions()
-         last_ids.dms = self.process_dms()
+         last_ids.my_timeline = self.process_my_timeline(last_ids.my_timeline)
+         last_ids.home = self.process_home_timeline(last_ids.home)
+         last_ids.replies = self.process_replies(last_ids.replies)
+         last_ids.mentions = self.process_mentions(last_ids.mentions)
+         last_ids.dms = self.process_dms(last_ids.dms)
 
-         #TODO: finish last_ids integration
-         #storage.save(last_ids,filename)
+         storage.save(last_ids,self._last_id_filename)
 
          self.sleep()
 
-   def process_my_timeline(self):
+   def extract_id_if_exists(self,statuses,default):
+      if len(statuses) > 0:
+        return statuses[0].id
+      else:
+        return default
+
+   def process_my_timeline(self,last_id):
       statuses = self._api.GetUserTimeline(screen_name='jblondin')
       #print [u"{0},{1}--{2}".format(s.id,s.user.screen_name,s.text) for s in statuses]
+      return self.extract_id_if_exists(statuses,last_id)
 
-   def process_home_timeline(self):
+   def process_home_timeline(self,last_id):
       sid = 0
       statuses = self._api.GetHomeTimeline(since_id=sid,count=5)
       print [u"{0},{1}--{2}".format(s.id,s.user.screen_name,s.text) for s in statuses]
-      print len(statuses),sid
+      print len(statuses),sid,statuses[0].id
+      return self.extract_id_if_exists(statuses,last_id)
 
-   def process_replies(self):
+   def process_replies(self,last_id):
       statuses = self._api.GetReplies()
-      pass
+      return self.extract_id_if_exists(statuses,last_id)
 
-   def process_mentions(self):
+   def process_mentions(self,last_id):
       statuses = self._api.GetMentions()
-      pass
+      return self.extract_id_if_exists(statuses,last_id)
 
-   def process_dms(self):
+   def process_dms(self,last_id):
       #FIXME: this apparently doesn't work; permission problem?
       #statuses = self._api.GetDirectMessages()
-      pass
+      return last_id
 
    def sleep(self):
       # TODO: update this to only sleep remaining amount
