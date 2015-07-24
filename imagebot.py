@@ -5,11 +5,15 @@ Simple imagebot example
 from twitterbot import TwitterBot
 import timeutils
 import datetime as dt
+import duration
 
 class ImageBot(TwitterBot):
 
    def on_subclass_init(self,**kwargs):
       self._my_timeline_count=5
+      self._period_between_tweets = duration.Duration(hours=1)
+      if 'period_between_tweets' in kwargs:
+         self._period_between_tweets = kwargs['period_between_tweets']
 
    def on_my_timeline(self,statuses):
       if len(statuses)==0:
@@ -19,7 +23,7 @@ class ImageBot(TwitterBot):
       else:
          most_recent_tweet= statuses[0]
          td = timeutils.time_since(most_recent_tweet.created_at)
-         if td > dt.timedelta(hours=6):
+         if td > self._period_between_tweets.timedelta:
             self.tweet_an_image()
 
    def tweet_an_image(self):
@@ -28,5 +32,5 @@ class ImageBot(TwitterBot):
 
 
 if __name__ == "__main__":
-   bot = ImageBot("jblondin.oauth")
+   bot = ImageBot("jblondin.oauth",period_between_tweets=duration.Duration(hours=0.75))
    bot.run()
