@@ -19,7 +19,6 @@ class LastIds(storage.StorageMixin):
    Storage object for the IDs of the last tweets seen on various feeds
    '''
    def __init__(self):
-      self.my_timeline = None
       self.home = None
       self.replies = None
       self.mentions = None
@@ -50,9 +49,10 @@ class TwitterBot(object):
       self._check_period=check_period
       # filename to store last IDs
       self._last_id_filename=last_id_file
-      # number of statuses from my timeline to view each iteration (overwritten in subclass when
-      # needed). If set to 0, only the new statuses will be shown
-      self._my_timeline_count=0
+      # timelines to watch, and the number of statuses from the timeline to view.  If the count is
+      # set to '0', the default number of timelines will be returned.  This can be overwritten in
+      # a subclass to watch additional timelines
+      self._watched_timelines=[(self._me.screen_name,0)]
       # start by trying to process direct messages.  this will be turned to false if DM access is
       # denied, or can be set to false in subclass
       self._process_direct_messages=True
@@ -70,9 +70,12 @@ class TwitterBot(object):
 
       while running:
 
+         # trigger automatic hook
+         self.on_update()
+
          last_ids = LastIds.load(self._last_id_filename)
 
-         last_ids.my_timeline = self.process_my_timeline(last_ids.my_timeline)
+         self.process_watched_timelines()
          last_ids.home = self.process_home_timeline(last_ids.home)
          last_ids.replies = self.process_replies(last_ids.replies)
          last_ids.mentions = self.process_mentions(last_ids.mentions)
@@ -83,21 +86,21 @@ class TwitterBot(object):
 
          self.sleep()
 
-   def process_my_timeline(self,last_id):
-      if self._my_timeline_count:
-         statuses = self._api.GetUserTimeline(user_id=self._me.id,count=self._my_timeline_count)
-      else:
-         statuses = self._api.GetUserTimeline(user_id=self._me.id,since_id=last_id)
-      if _DEBUG:
-         self.print_statuses("My Timeline",statuses)
+   def on_update(self):
+      # implemented in subclass
+      pass
+
+   def process_watched_timelines(self):
+      all_statuses = {}
+      for screenname,count in self._watched_timelines:
+         all_statuses[screenname] = self._api.GetUserTimeline(screen_name=screenname,count=count)
+         if _DEBUG:
+            self.print_statuses("Watched Timeline {0}".format(screenname),all_statuses[screenname])
 
       # trigger hook
-      self.on_my_timeline(statuses)
+      self.on_watched_timelines(all_statuses)
 
-      # return new 'last_id' (if exists)
-      return self.extract_id_if_exists(statuses,last_id)
-
-   def on_my_timeline(self,statuses):
+   def on_watched_timelines(self,statuses):
       # implemented in subclass
       pass
 
