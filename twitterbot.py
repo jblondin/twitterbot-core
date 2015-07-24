@@ -35,7 +35,6 @@ class TwitterBot(object):
                 oauth_config={},
                 check_period=duration.Duration(seconds=30),
                 last_id_file="last_ids.dat",
-                *args,
                 **kwargs):
       '''
       The twitter bot constructor takes ...(TODO)
@@ -59,9 +58,9 @@ class TwitterBot(object):
       self._process_direct_messages=True
 
       # any subclass initialization can go in this class to avoid unnecessary constructor chaining
-      self.on_subclass_init(*args,**kwargs)
+      self.on_subclass_init(**kwargs)
 
-   def on_subclass_init(self,*args,**kwargs):
+   def on_subclass_init(self,**kwargs):
       # implemented in subclass
       pass
 
