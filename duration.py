@@ -3,6 +3,7 @@ A common duration utility class.
 '''
 
 import re
+import datetime as dt
 import unittest
 
 def weeks_to_seconds(weeks):
@@ -266,6 +267,15 @@ class Duration(object):
    @weeks.setter
    def weeks(self,weeks):
       self._seconds = weeks_to_seconds(weeks)
+
+   @property
+   def timedelta(self):
+      '''
+      Returns a datetime.timedelta object that corresponds to this duration.
+
+      Drops anything under microsecond granularity.
+      '''
+      return dt.timedelta(seconds=self._seconds)
 
    def __str__(self):
       split_by_unit = ['']*8
