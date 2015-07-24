@@ -4,8 +4,8 @@ Simple imagebot example
 
 from twitterbot import TwitterBot
 import timeutils
-import datetime as dt
 import duration
+import os.path
 
 class ImageBot(TwitterBot):
 
@@ -14,23 +14,48 @@ class ImageBot(TwitterBot):
       self._period_between_tweets = duration.Duration(hours=1)
       if 'period_between_tweets' in kwargs:
          self._period_between_tweets = kwargs['period_between_tweets']
+      self._watched_timelines=[(self._me.screen_name,1)]
 
-   def on_my_timeline(self,statuses):
-      if len(statuses)==0:
+   def on_watched_timelines(self,statuses):
+      my_timeline = statuses[self._me.screen_name]
+      if len(my_timeline)==0:
          # no tweets yet, let's get started!
          print "WARNING: No tweets found for this bot. Proceeding with initial tweet!"
-         self.tweet_an_image()
+         self.generate_and_tweet()
       else:
-         most_recent_tweet= statuses[0]
+         most_recent_tweet=my_timeline[0]
          td = timeutils.time_since(most_recent_tweet.created_at)
          if td > self._period_between_tweets.timedelta:
-            self.tweet_an_image()
+            self.generate_and_tweet()
 
-   def tweet_an_image(self):
-      print "Tweeting an image!"
+   def generate_and_tweet(self):
+      image_filename,message = self.generate()
+      if image_filename and os.path.isfile(image_filename):
+         self.tweet_image(image_filename,message)
+
+   def generate(self):
+      '''
+      Generates an image, saves it to a file, and returns the name of the file.
+
+      Implemented in subclass.
+      '''
+      return (None,None)
+
+   def tweet_image(self,image_filename,message):
+      print "Tweeting {0} with message: {1}".format(image_filename,message)
       pass
 
+from PIL import Image
+import array
+
+class ImageBotTest(ImageBot):
+   def generate(self):
+      pixels = array.array('B',[255,0,0]*256**2)
+      img = Image.frombytes('RGB',(256,256),pixels)
+      image_filename="foo.png"
+      img.save(image_filename)
+      return (image_filename,"A picture!")
 
 if __name__ == "__main__":
-   bot = ImageBot("jblondin.oauth",period_between_tweets=duration.Duration(hours=0.75))
+   bot = ImageBotTest("jblondin.oauth",period_between_tweets=duration.Duration(minutes=1))
    bot.run()
