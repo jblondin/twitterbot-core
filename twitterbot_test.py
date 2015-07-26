@@ -3,8 +3,9 @@ import datetime as dt
 
 class TwitterBotTest(TwitterBot):
    def on_update(self):
-      print "Tweeting!"
-      self.tweet("UnitTest: TwitterBotTest ({0})".format(str(dt.datetime.utcnow())))
+      message = "UnitTest: TwitterBotTest ({0})".format(str(dt.datetime.utcnow()))
+      print "Tweeting: {0}".format(message)
+      self.tweet(message)
       self._running = False
 
 if __name__ == "__main__":

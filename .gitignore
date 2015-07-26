@@ -60,3 +60,5 @@ target/
 *.oauth
 # ignore data files
 *.dat
+# ignore generated images
+*.png

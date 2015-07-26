@@ -42,5 +42,7 @@ class ImageBot(TwitterBot):
       return (None,None)
 
    def tweet_image(self,image_filename,message):
-      print "Tweeting {0} with message: {1}".format(image_filename,message)
-      pass
+      self._api.PostMedia(message,image_filename)
+
+   def tweet_multiple_images(self,image_filenames,message):
+      self._api.PostMultipleMedia(message,image_filenames)
