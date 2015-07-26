@@ -12,5 +12,5 @@ class ImageBotTest(ImageBot):
       return (image_filename,"A picture!")
 
 if __name__ == "__main__":
-   bot = ImageBotTest("jblondin.oauth",period_between_tweets=duration.Duration(minutes=1))
+   bot = ImageBotTest("unittestbot.oauth",period_between_tweets=duration.Duration(minutes=1))
    bot.run()
