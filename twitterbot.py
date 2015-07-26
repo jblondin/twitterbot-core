@@ -56,6 +56,8 @@ class TwitterBot(object):
       # start by trying to process direct messages.  this will be turned to false if DM access is
       # denied, or can be set to false in subclass
       self._process_direct_messages=True
+      # whether or not bot should keep running
+      self._running=False
 
       # any subclass initialization can go in this class to avoid unnecessary constructor chaining
       self.on_subclass_init(**kwargs)
@@ -66,9 +68,9 @@ class TwitterBot(object):
 
    def run(self):
 
-      running = True
+      self._running = True
 
-      while running:
+      while self._running:
 
          # trigger automatic hook
          self.on_update()
@@ -84,7 +86,8 @@ class TwitterBot(object):
 
          last_ids.save(self._last_id_filename)
 
-         self.sleep()
+         if self._running:
+            self.sleep()
 
    def on_update(self):
       # implemented in subclass
@@ -195,3 +198,9 @@ class TwitterBot(object):
       for s in statuses:
          print u'{0} @{1},{2} -- {3}'.format(index,s.user.screen_name,s.id,s.text)
          index += 1
+
+   def tweet(self,message):
+      '''
+      Simple utility function to tweet a message.
+      '''
+      self._api.PostUpdate(message)
