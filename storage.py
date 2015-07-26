@@ -10,6 +10,14 @@ complicated, just use pickle or some other serialization method.
 '''
 import os.path
 
+class StorageError(Exception):
+  '''Base class for storage errors'''
+
+  @property
+  def message(self):
+    '''Returns the first argument used to construct this error.'''
+    return self.args[0]
+
 def load_dict(filename):
    '''
    Loads a file into a dictionary.  The file must be of a format similar to initializing a
@@ -57,7 +65,7 @@ class StorageMixin(object):
       instance_dict = load_dict(filename)
       for k in instance_dict:
          if k not in instance.__dict__.keys():
-            raise TwitterBotError("Error processing storage file ({0}): member variable name '{1}' "
+            raise StorageError("Error processing storage file ({0}): member variable name '{1}' "
                "not recognized.".format(filename,k))
          instance.__dict__[k] = instance_dict[k]
       return instance

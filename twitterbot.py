@@ -7,7 +7,7 @@ import storage
 _DEBUG = True
 
 class TwitterBotError(Exception):
-  '''Base class for Duration errors'''
+  '''Base class for twitterbot errors'''
 
   @property
   def message(self):
@@ -195,7 +195,3 @@ class TwitterBot(object):
       for s in statuses:
          print u'{0} @{1},{2} -- {3}'.format(index,s.user.screen_name,s.id,s.text)
          index += 1
-
-if __name__ == "__main__":
-   bot = TwitterBot("jblondin.oauth")
-   bot.run()
