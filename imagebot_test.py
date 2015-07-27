@@ -22,7 +22,7 @@ class ImageBotTest(ImageBot):
       print "Generated image {0}, tweeting with message: {1}".format(image_filename,message)
       return (image_filename,message)
 
-   def on_update(self):
+   def on_update_end(self):
       # only run once
       self._running=False
 

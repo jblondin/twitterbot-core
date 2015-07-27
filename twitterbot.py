@@ -3,9 +3,6 @@ import duration
 import time
 import storage
 
-#TODO: make this a command-line option
-_DEBUG = True
-
 class TwitterBotError(Exception):
   '''Base class for twitterbot errors'''
 
@@ -58,6 +55,8 @@ class TwitterBot(object):
       self._process_direct_messages=True
       # whether or not bot should keep running
       self._running=False
+      # whether or not to have extra printouts
+      self._DEBUG=False
 
       # any subclass initialization can go in this class to avoid unnecessary constructor chaining
       self.on_subclass_init(**kwargs)
@@ -73,7 +72,7 @@ class TwitterBot(object):
       while self._running:
 
          # trigger automatic hook
-         self.on_update()
+         self.on_update_start()
 
          last_ids = LastIds.load(self._last_id_filename)
 
@@ -86,10 +85,15 @@ class TwitterBot(object):
 
          last_ids.save(self._last_id_filename)
 
+         self.on_update_end()
+
          if self._running:
             self.sleep()
 
-   def on_update(self):
+   def on_update_start(self):
+      # implemented in subclass
+      pass
+   def on_update_end(self):
       # implemented in subclass
       pass
 
@@ -97,7 +101,7 @@ class TwitterBot(object):
       all_statuses = {}
       for screenname,count in self._watched_timelines:
          all_statuses[screenname] = self._api.GetUserTimeline(screen_name=screenname,count=count)
-         if _DEBUG:
+         if self._DEBUG:
             self.print_statuses("Watched Timeline {0}".format(screenname),all_statuses[screenname])
 
       # trigger hook
@@ -109,7 +113,7 @@ class TwitterBot(object):
 
    def process_home_timeline(self,last_id):
       statuses = self._api.GetHomeTimeline(since_id=last_id)
-      if _DEBUG:
+      if self._DEBUG:
          self.print_statuses("Home Timeline",statuses)
 
       # trigger hook
@@ -123,7 +127,7 @@ class TwitterBot(object):
 
    def process_replies(self,last_id):
       statuses = self._api.GetReplies(since_id=last_id)
-      if _DEBUG:
+      if self._DEBUG:
          self.print_statuses("Replies",statuses)
 
       # trigger hook
@@ -137,7 +141,7 @@ class TwitterBot(object):
 
    def process_mentions(self,last_id):
       statuses = self._api.GetMentions(since_id=last_id)
-      if _DEBUG:
+      if self._DEBUG:
          self.print_statuses("Mentions",statuses)
 
       # trigger hook
@@ -150,7 +154,6 @@ class TwitterBot(object):
       pass
 
    def process_dms(self,last_id):
-      #FIXME: this apparently doesn't work; permission problem?
       statuses = []
       try:
          statuses = self._api.GetDirectMessages(since_id=last_id)
@@ -167,7 +170,7 @@ class TwitterBot(object):
          else:
             raise
 
-      if _DEBUG:
+      if self._DEBUG:
          self.print_statuses("DMs",statuses)
 
       # trigger hook

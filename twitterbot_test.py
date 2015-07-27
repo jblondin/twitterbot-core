@@ -2,7 +2,7 @@ from twitterbot import TwitterBot
 import datetime as dt
 
 class TwitterBotTest(TwitterBot):
-   def on_update(self):
+   def on_update_start(self):
       message = "UnitTest: TwitterBotTest ({0})".format(str(dt.datetime.utcnow()))
       print "Tweeting: {0}".format(message)
       self.tweet(message)
