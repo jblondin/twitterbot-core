@@ -10,7 +10,6 @@ import os.path
 class ImageBot(TwitterBot):
 
    def on_subclass_init(self,**kwargs):
-      self._my_timeline_count=5
       self._period_between_tweets = duration.Duration(hours=1)
       if 'period_between_tweets' in kwargs:
          self._period_between_tweets = kwargs['period_between_tweets']
