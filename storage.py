@@ -43,7 +43,10 @@ def save_dict(d,filename):
    with open(filename,'w') as dest_file:
       dest_file.write('{')
       for k in d.keys():
-         dest_file.write("'{0}':'{1}',".format(k,d[k]))
+         if type(d[k]) is str:
+            dest_file.write("'{0}':'{1}',".format(k,d[k]))
+         else:
+            dest_file.write("'{0}':{1},".format(k,d[k]))
       dest_file.write('}')
 
 class StorageMixin(object):
