@@ -36,7 +36,7 @@ class TwitterBot(object):
       The twitter bot constructor takes ...(TODO)
       '''
       if len(oauth_config_file) > 0:
-         oauth_config = storage.load_dict(oauth_config_file)
+         oauth_config = storage.load_data(oauth_config_file)
 
       # twitter API object
       self._api = twitter.Api(**oauth_config)

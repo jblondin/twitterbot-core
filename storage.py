@@ -18,20 +18,34 @@ class StorageError(Exception):
     '''Returns the first argument used to construct this error.'''
     return self.args[0]
 
-def load_dict(filename):
+def load_data(filename):
    '''
-   Loads a file into a dictionary.  The file must be of a format similar to initializing a
-   dictionary in Python code:
+   Loads a file into a dictionary.  The file must be of a format similar to initializing an object
+   such as a dictionary or list in Python code:
 
    {'key1':'value1','key2':'value2'}
+   ['value1','value2']
 
    Newlines are stripped out (and thus the data file should avoid using the '\' character to denote
    line continuation).
    '''
+   if not os.path.isfile(filename):
+      return None
    source = ""
    with open(filename,'r') as source_file:
       source = "".join(source_file.readlines())
    return eval(source)
+
+def load_list(filename):
+   data = load_data(filename)
+   if data is None:
+      return []
+   return data
+def load_dict(filename):
+   data = load_data(filename)
+   if data is None:
+      return {}
+   return data
 
 def save_dict(d,filename):
    '''
@@ -49,6 +63,22 @@ def save_dict(d,filename):
             dest_file.write("'{0}':{1},".format(k,d[k]))
       dest_file.write('}')
 
+def save_list(l,filename):
+   '''
+   Saves a list into a file.  The resulting file with contain (in plaintext), the Python
+   list in text form. E.g.,
+
+   ['value1','value2']
+   '''
+   with open(filename,'w') as dest_file:
+      dest_file.write('[')
+      for value in l:
+         if type(value) is str:
+            dest_file.write("'{1}',".format(k,value))
+         else:
+            dest_file.write("{1},".format(k,value))
+      dest_file.write(']')
+
 class StorageMixin(object):
    '''
    A mixin which adds a 'load' and 'save' method to an object, which will write the object's member
@@ -65,7 +95,7 @@ class StorageMixin(object):
       if not os.path.isfile(filename):
          # return empty
          return instance
-      instance_dict = load_dict(filename)
+      instance_dict = load_data(filename)
       for k in instance_dict:
          if k not in instance.__dict__.keys():
             raise StorageError("Error processing storage file ({0}): member variable name '{1}' "
