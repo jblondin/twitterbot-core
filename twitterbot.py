@@ -132,7 +132,11 @@ class TwitterBot(object):
    def process_watched_timelines(self):
       all_statuses = {}
       for screenname,count in self._watched_timelines:
-         all_statuses[screenname] = self._api.GetUserTimeline(screen_name=screenname,count=count)
+         try:
+            all_statuses[screenname] = self._api.GetUserTimeline(screen_name=screenname,count=count)
+         except twitter.TwitterError,te:
+            print "ERROR: {0}".format(te.message)
+
          if self._DEBUG:
             self.print_statuses("Watched Timeline {0}".format(screenname),all_statuses[screenname])
 
@@ -144,7 +148,11 @@ class TwitterBot(object):
       pass
 
    def process_home_timeline(self,last_id):
-      statuses = self._api.GetHomeTimeline(since_id=last_id)
+      try:
+         statuses = self._api.GetHomeTimeline(since_id=last_id)
+      except twitter.TwitterError,te:
+         print "ERROR: {0}".format(te.message)
+
       if self._DEBUG:
          self.print_statuses("Home Timeline",statuses)
 
@@ -159,7 +167,11 @@ class TwitterBot(object):
       pass
 
    def process_replies(self,last_id):
-      statuses = self._api.GetReplies(since_id=last_id)
+      try:
+         statuses = self._api.GetReplies(since_id=last_id)
+      except twitter.TwitterError,te:
+         print "ERROR: {0}".format(te.message)
+
       if self._DEBUG:
          self.print_statuses("Replies",statuses)
 
@@ -174,7 +186,11 @@ class TwitterBot(object):
       pass
 
    def process_mentions(self,last_id):
-      statuses = self._api.GetMentions(since_id=last_id)
+      try:
+         statuses = self._api.GetMentions(since_id=last_id)
+      except twitter.TwitterError,te:
+         print "ERROR: {0}".format(te.message)
+
       if self._DEBUG:
          self.print_statuses("Mentions",statuses)
 
@@ -233,7 +249,7 @@ class TwitterBot(object):
             self._do_process_direct_messages=False
             statuses = []
          else:
-            raise
+            print "ERROR: {0}".format(e.message)
 
       if self._DEBUG:
          self.print_statuses("DMs",statuses)
@@ -281,8 +297,14 @@ class TwitterBot(object):
       '''
       Simple utility function to tweet a message.
       '''
-      self._api.PostUpdate(message)
+      try:
+         self._api.PostUpdate(message)
+      except:
+         print "ERROR: {0}".format(te.message)
 
    def reply(self,in_reply_to,response):
-      self._api.PostUpdate("@{0} {1}".format(in_reply_to.user.screen_name,response),\
-         in_reply_to_status_id=in_reply_to.id)
+      try:
+         self._api.PostUpdate("@{0} {1}".format(in_reply_to.user.screen_name,response),\
+            in_reply_to_status_id=in_reply_to.id)
+      except twitter.TwitterError,te:
+         print "ERROR: {0}".format(te.message)
