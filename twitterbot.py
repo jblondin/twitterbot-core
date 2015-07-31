@@ -32,7 +32,7 @@ class TwitterBot(object):
    def __init__(self,
                 oauth_config_file="",
                 oauth_config={},
-                check_period=duration.Duration(seconds=30),
+                check_period=duration.Duration(seconds=90),
                 last_id_file="last_ids.dat",
                 **kwargs):
       '''
@@ -282,3 +282,7 @@ class TwitterBot(object):
       Simple utility function to tweet a message.
       '''
       self._api.PostUpdate(message)
+
+   def reply(self,in_reply_to,response):
+      self._api.PostUpdate("@{0} {1}".format(in_reply_to.user.screen_name,response),\
+         in_reply_to_status_id=in_reply_to.id)
