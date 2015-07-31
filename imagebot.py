@@ -13,7 +13,7 @@ class ImageBot(TwitterBot):
       self._period_between_tweets = duration.Duration(hours=1)
       if 'period_between_tweets' in kwargs:
          self._period_between_tweets = kwargs['period_between_tweets']
-      self._watched_timelines=[(self._me.screen_name,1)]
+      self.add_self_to_watched_timelines()
 
    def on_watched_timelines(self,statuses):
       my_timeline = statuses[self._me.screen_name]

@@ -48,8 +48,9 @@ class TwitterBot(object):
       self._last_id_filename=last_id_file
       # timelines to watch, and the number of statuses from the timeline to view.  If the count is
       # set to '0', the default number of timelines will be returned.  This can be overwritten in
-      # a subclass to watch additional timelines
-      self._watched_timelines=[(self._me.screen_name,0)]
+      # a subclass to watch additional timelines.  If this list is empty, no timelines will be
+      # specifically watched
+      self._watched_timelines=[]
       # start by trying to process direct messages.  this will be turned to false if DM access is
       # denied, or can be set to false in subclass
       self._process_direct_messages=True
@@ -64,6 +65,12 @@ class TwitterBot(object):
    def on_subclass_init(self,**kwargs):
       # implemented in subclass
       pass
+
+   def add_self_to_watched_timelines(self,count=1):
+      '''
+      Helper function to add this bot's own user to watched timelines list
+      '''
+      self._watched_timelines.append((self._me.screen_name,count))
 
    def run(self):
 
