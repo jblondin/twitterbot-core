@@ -1,6 +1,8 @@
-import twitter
-import duration
 import time
+import twitter
+
+import timeutils
+import duration
 import storage
 
 class TwitterBotError(Exception):
@@ -64,6 +66,11 @@ class TwitterBot(object):
       self._running=False
       # whether or not to have extra printouts
       self._DEBUG=False
+
+      # only respond to actions that are newer than this duration
+      # this prevents responding to really old stuff if the bot goes down or if last_ids gets
+      # deleted
+      self._max_actionable_age=duration.Duration(hours=6)
 
       # any subclass initialization can go in this class to avoid unnecessary constructor chaining
       self.on_subclass_init(**kwargs)
@@ -137,7 +144,8 @@ class TwitterBot(object):
          self.print_statuses("Home Timeline",statuses)
 
       # trigger hook
-      self.on_home_timeline(statuses)
+      if self.actionable(statuses):
+        self.on_home_timeline(statuses)
 
       return self.extract_id_if_exists(statuses,last_id)
 
@@ -151,7 +159,8 @@ class TwitterBot(object):
          self.print_statuses("Replies",statuses)
 
       # trigger hook
-      self.on_replies(statuses)
+      if self.actionable(statuses):
+        self.on_replies(statuses)
 
       return self.extract_id_if_exists(statuses,last_id)
 
@@ -164,8 +173,12 @@ class TwitterBot(object):
       if self._DEBUG:
          self.print_statuses("Mentions",statuses)
 
-      # trigger hook
-      self.on_mentions(statuses)
+      if self.actionable(statuses):
+        # process the commands
+        self.process_commands(statuses)
+
+        # trigger hook
+        self.on_mentions(statuses)
 
       return self.extract_id_if_exists(statuses,last_id)
 
@@ -194,13 +207,23 @@ class TwitterBot(object):
          self.print_statuses("DMs",statuses)
 
       # trigger hook
-      self.on_dms(statuses)
+      if self.actionable(statuses):
+        self.on_dms(statuses)
 
       return self.extract_id_if_exists(statuses,last_id)
 
    def on_dms(self,statuses):
       # implemented in subclass
       pass
+
+   def actionable(self,statuses):
+      if len(statuses) > 0:
+         most_recent_status=statuses[0]
+         td=timeutils.time_since(most_recent_status.created_at)
+         if td < self._max_actionable_age.timedelta:
+            return True
+
+      return False
 
    def sleep(self):
       # TODO: update this to only sleep remaining amount
