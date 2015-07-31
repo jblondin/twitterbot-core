@@ -53,7 +53,13 @@ class TwitterBot(object):
       self._watched_timelines=[]
       # start by trying to process direct messages.  this will be turned to false if DM access is
       # denied, or can be set to false in subclass
-      self._process_direct_messages=True
+      self._do_process_direct_messages=False
+      # whether or not to check replies
+      self._do_process_replies=False
+      # whether or not to process home timeline
+      self._do_process_home_timeline=False
+      # whether or not to process mentions (including commands)
+      self._do_process_mentions=True
       # whether or not bot should keep running
       self._running=False
       # whether or not to have extra printouts
@@ -84,10 +90,17 @@ class TwitterBot(object):
          last_ids = LastIds.load(self._last_id_filename)
 
          self.process_watched_timelines()
-         last_ids.home = self.process_home_timeline(last_ids.home)
-         last_ids.replies = self.process_replies(last_ids.replies)
-         last_ids.mentions = self.process_mentions(last_ids.mentions)
-         if self._process_direct_messages:
+
+         if self._do_process_home_timeline:
+            last_ids.home = self.process_home_timeline(last_ids.home)
+
+         if self._do_process_replies:
+            last_ids.replies = self.process_replies(last_ids.replies)
+
+         if self._do_process_mentions:
+           last_ids.mentions = self.process_mentions(last_ids.mentions)
+
+         if self._do_process_direct_messages:
             last_ids.dms = self.process_dms(last_ids.dms)
 
          last_ids.save(self._last_id_filename)
@@ -172,7 +185,7 @@ class TwitterBot(object):
          if len(error_args) > 0 and 'code' in error_args[0] and error_args[0]['code'] == 93:
             print "WARNING: Access to direct messages denied for this user.  Turning off direct " \
                "message processing."
-            self._process_direct_messages=False
+            self._do_process_direct_messages=False
             statuses = []
          else:
             raise
