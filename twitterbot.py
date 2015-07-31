@@ -4,6 +4,7 @@ import twitter
 import timeutils
 import duration
 import storage
+import command
 
 class TwitterBotError(Exception):
   '''Base class for twitterbot errors'''
@@ -66,6 +67,10 @@ class TwitterBot(object):
       self._running=False
       # whether or not to have extra printouts
       self._DEBUG=False
+
+      # list of screen names allowed to send commands
+      self._allowed_bosses_filename="allowed_bosses.dat"
+      self._allowed_bosses=storage.load_list(self._allowed_bosses_filename)
 
       # only respond to actions that are newer than this duration
       # this prevents responding to really old stuff if the bot goes down or if last_ids gets
@@ -181,6 +186,33 @@ class TwitterBot(object):
         self.on_mentions(statuses)
 
       return self.extract_id_if_exists(statuses,last_id)
+
+   def process_commands(self,mentions):
+      # statuses come in most recent -> least recent order...we want to go the opposite direction
+      for status in reversed(mentions):
+         if status.user.screen_name in self._allowed_bosses:
+            # user is valid, it can issue commands
+
+            # create copy for local processing
+            status_txt=status.text
+
+            # strip off the @mention part
+            while len(status_txt) > 0 and status_txt[0]=='@':
+               status_txt=" ".join(status_txt.split(" ")[1:])
+            print "Command: {0}".format(status_txt)
+            # check if first name is 'ctl
+            if len(status_txt) > 3 and status_txt[:4]=="ctl ":
+              # this is a command; strip off the 'ctl'
+              status_txt=" ".join(status_txt.split(" ")[1:])
+
+              try:
+                 cmnd=command.CommandFactory.create(status_txt,self)
+                 response = cmnd.run()
+                 if response is not None:
+                    self.reply(status,response)
+              except command.CommandError, ce:
+                 self.reply(status,"Error: {0}".format(ce.message))
+
 
    def on_mentions(self,statuses):
       # implemented in subclass
