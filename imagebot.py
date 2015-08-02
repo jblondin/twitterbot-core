@@ -39,9 +39,3 @@ class ImageBot(TwitterBot):
       Implemented in subclass.
       '''
       return (None,None)
-
-   def tweet_image(self,image_filename,message):
-      self._api.PostMedia(message,image_filename)
-
-   def tweet_multiple_images(self,image_filenames,message):
-      self._api.PostMultipleMedia(message,image_filenames)

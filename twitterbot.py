@@ -7,12 +7,12 @@ import storage
 import command
 
 class TwitterBotError(Exception):
-  '''Base class for twitterbot errors'''
+   '''Base class for twitterbot errors'''
 
-  @property
-  def message(self):
-    '''Returns the first argument used to construct this error.'''
-    return self.args[0]
+   @property
+   def message(self):
+      '''Returns the first argument used to construct this error.'''
+      return self.args[0]
 
 class LastIds(storage.StorageMixin):
    '''
@@ -213,8 +213,7 @@ class TwitterBot(object):
             status_txt=status.text
 
             # strip off the @mention part
-            while len(status_txt) > 0 and status_txt[0]=='@':
-               status_txt=" ".join(status_txt.split(" ")[1:])
+            status_txt=strip_at_symbols(status_txt)
             print "Command: {0}".format(status_txt)
             # check if first name is 'ctl
             if len(status_txt) > 3 and status_txt[:4]=="ctl ":
@@ -293,18 +292,50 @@ class TwitterBot(object):
          print u'{0} @{1},{2} -- {3}'.format(index,s.user.screen_name,s.id,s.text)
          index += 1
 
+   def strip_at_symbols(self,status_txt):
+      # strip off the @mention part
+      while len(status_txt) > 0 and status_txt[0]=='@':
+         status_txt=" ".join(status_txt.split(" ")[1:])
+      return status_txt
+
    def tweet(self,message):
       '''
       Simple utility function to tweet a message.
       '''
       try:
          self._api.PostUpdate(message)
-      except:
+      except TwitterError,te:
          print "ERROR: {0}".format(te.message)
 
    def reply(self,in_reply_to,response):
       try:
          self._api.PostUpdate("@{0} {1}".format(in_reply_to.user.screen_name,response),\
             in_reply_to_status_id=in_reply_to.id)
+      except TwitterError,te:
+         print "ERROR: {0}".format(te.message)
+
+   def tweet_image(self,image_filename,message):
+      try:
+         self._api.PostMedia(message,image_filename)
       except twitter.TwitterError,te:
+        print "ERROR: {0}".format(te.message)
+
+   def tweet_multiple_images(self,image_filenames,message):
+      try:
+         self._api.PostMultipleMedia(message,image_filenames)
+      except twitter.TwitterError,te:
+         print "ERROR: {0}".format(te.message)
+
+   def reply_with_image(self,in_reply_to,image_filename,response):
+      try:
+         self._api.PostMedia("@{0} {1}".format(in_reply_to.user.screen_name,response),\
+            image_filename,in_reply_to_status_id=in_reply_to.id)
+      except TwitterError,te:
+         print "ERROR: {0}".format(te.message)
+
+   def reply_with_multiple_images(self,in_reply_to,image_filenames,response):
+      try:
+         self._api.PostMedia("@{0} {1}".format(in_reply_to.user.screen_name,response),\
+            image_filenames,in_reply_to_status_id=in_reply_to.id)
+      except TwitterError,te:
          print "ERROR: {0}".format(te.message)
