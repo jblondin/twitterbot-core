@@ -93,6 +93,7 @@ class TwitterBot(object):
    def run(self):
 
       self._running = True
+      print "Running with user {0}".format(self._me.screen_name)
 
       while self._running:
 
@@ -148,6 +149,7 @@ class TwitterBot(object):
       pass
 
    def process_home_timeline(self,last_id):
+      statuses=[]
       try:
          statuses = self._api.GetHomeTimeline(since_id=last_id)
       except twitter.TwitterError,te:
@@ -167,6 +169,7 @@ class TwitterBot(object):
       pass
 
    def process_replies(self,last_id):
+      statuses=[]
       try:
          statuses = self._api.GetReplies(since_id=last_id)
       except twitter.TwitterError,te:
@@ -186,6 +189,7 @@ class TwitterBot(object):
       pass
 
    def process_mentions(self,last_id):
+      statuses=[]
       try:
          statuses = self._api.GetMentions(since_id=last_id)
       except twitter.TwitterError,te:
