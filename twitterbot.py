@@ -217,7 +217,7 @@ class TwitterBot(object):
             status_txt=status.text
 
             # strip off the @mention part
-            status_txt=strip_at_symbols(status_txt)
+            status_txt=self.strip_at_symbols(status_txt)
             print "Command: {0}".format(status_txt)
             # check if first name is 'ctl
             if len(status_txt) > 3 and status_txt[:4]=="ctl ":
