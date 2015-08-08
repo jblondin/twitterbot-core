@@ -16,6 +16,8 @@ class ImageBot(TwitterBot):
       self.add_self_to_watched_timelines()
 
    def on_watched_timelines(self,statuses):
+      if self._me.screen_name not in statuses:
+         return
       my_timeline = statuses[self._me.screen_name]
       if len(my_timeline)==0:
          # no tweets yet, let's get started!
